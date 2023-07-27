@@ -1,3 +1,4 @@
+# This file is to test correctness of backward of mylinearops.matmul_forward
 
 import torch
 
@@ -8,6 +9,7 @@ res = torch.mm(A, B)
 res.retain_grad()
 res.sum().backward()
 
+print(A.grad)
 print(res.grad)
 
 print(torch.allclose(A.grad, torch.mm(res.grad, B.t())))
