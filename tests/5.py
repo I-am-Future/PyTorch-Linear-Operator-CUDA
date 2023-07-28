@@ -2,7 +2,7 @@ import torch
 import mylinearops_cuda
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 print('Init complete!')
 
 class Matmul(torch.autograd.Function):
@@ -14,8 +14,13 @@ class Matmul(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         A, B = ctx.saved_tensors
-        return mylinearops_cuda.matmul_dA_backward(grad_output.contiguous(), A, B), \
-            mylinearops_cuda.matmul_dB_backward(grad_output.contiguous(), A, B)
+        grad_A = None
+        if ctx.needs_input_grad[0]:
+            grad_A = mylinearops_cuda.matmul_dA_backward(grad_output.contiguous(), A, B)
+        grad_B = None
+        if ctx.needs_input_grad[1]:
+            grad_B = mylinearops_cuda.matmul_dB_backward(grad_output.contiguous(), A, B)
+        return grad_A, grad_B
     
 A = torch.randn(10, 20).to('cuda:0').requires_grad_()
 B = torch.randn(20, 30).to('cuda:0').requires_grad_()

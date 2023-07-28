@@ -84,3 +84,60 @@ torch::Tensor matmul_fw_cuda(torch::Tensor A, torch::Tensor B) {
     return result;
 }
 
+
+template <typename scalar_t>
+__global__ void transpose_kernel(
+    const torch::PackedTensorAccessor<scalar_t, 2, torch::RestrictPtrTraits, size_t> A,
+    torch::PackedTensorAccessor<scalar_t, 2, torch::RestrictPtrTraits, size_t> res,
+    const int m, const int p
+)
+{
+    const int row = blockIdx.x * blockDim.x + threadIdx.x;
+    const int col = blockIdx.y * blockDim.y + threadIdx.y;
+#ifdef EXPERIMENTAL
+    // use shared memory
+    __shared__ scalar_t As[BLOCK_SIZE][BLOCK_SIZE];
+    if (row < m && col < p) {
+        As[threadIdx.x][threadIdx.y] = A[row][col];
+    }
+    __syncthreads();
+
+    const int row2 = blockIdx.y * blockDim.y + threadIdx.x;
+    const int col2 = blockIdx.x * blockDim.x + threadIdx.y;
+    if (row2 < p && col2 < m) {
+        res[row2][col2] = As[threadIdx.y][threadIdx.x];
+    }
+
+#else
+    
+    if (row >= m || col >= p) return;
+
+    res[col][row] = A[row][col];
+
+#endif
+}
+
+
+torch::Tensor transpose_cuda(const torch::Tensor A) {
+
+    const int m = A.size(0);
+    const int n = A.size(1);
+    
+    // Create output tensor
+    auto result = torch::empty({n, m}, A.options());
+
+    const dim3 blockSize = dim3(BLOCK_SIZE, BLOCK_SIZE);
+    const dim3 gridSize = dim3(DIV_CEIL(m, BLOCK_SIZE), DIV_CEIL(n, BLOCK_SIZE));
+  
+    // Call the cuda kernel launcher
+    AT_DISPATCH_FLOATING_TYPES(A.type(), "matmul_cuda", 
+    ([&] {
+        transpose_kernel<scalar_t><<<gridSize, blockSize>>>(
+            A.packed_accessor<scalar_t, 2, torch::RestrictPtrTraits, size_t>(),
+            result.packed_accessor<scalar_t, 2, torch::RestrictPtrTraits, size_t>(),
+            m, n
+        );
+    }));
+
+    return result;
+}

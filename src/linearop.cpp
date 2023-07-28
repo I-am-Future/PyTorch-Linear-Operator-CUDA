@@ -76,7 +76,8 @@ torch::Tensor matmul_dA_backward(
     CHECK_INPUT(B);
     
     // dL/dB = dL/dY * B^T
-    auto grad_A = matmul_fw_cuda(grad_output, B.transpose(0, 1));
+    auto grad_A = matmul_fw_cuda(grad_output, transpose_cuda(B));
+    // auto grad_A = matmul_fw_cuda(grad_output, B.transpose(0, 1));
 
     return grad_A;
 }
@@ -92,7 +93,8 @@ torch::Tensor matmul_dB_backward(
     CHECK_INPUT(B);
     
     // dL/dB = A^T * dL/dY
-    auto grad_B = matmul_fw_cuda(A.transpose(0, 1), grad_output);
+    auto grad_B = matmul_fw_cuda(transpose_cuda(A), grad_output);
+    // auto grad_B = matmul_fw_cuda(A.transpose(0, 1), grad_output);
 
     return grad_B;
 }
