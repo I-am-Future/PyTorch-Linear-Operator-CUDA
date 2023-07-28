@@ -1,7 +1,7 @@
 #include "addmul_kernel.h"
 
 #define BLOCK_SIZE 16
-// #define EXPERIMENTAL
+#define EXPERIMENTAL
 
 
 template <typename scalar_t>
@@ -58,7 +58,7 @@ __global__ void matmul_fw_kernel(
 #endif
 }
 
-torch::Tensor matmul_fw_cuda(torch::Tensor A, torch::Tensor B) {
+torch::Tensor matmul_cuda(torch::Tensor A, torch::Tensor B) {
 
     const int m = A.size(0);
     const int n = A.size(1);

@@ -14,11 +14,13 @@ It includes:
 
     + How to write Python module wrapper
 
-+ A simple matrix multiplication operator.
++ A simple Python matrix multiplication operator and a simple linear (Y = XW+b) operator.
 
-+ In addition, we add some functions to form a simple linear (Y = XW+b) operator.
++ A bunch of C++/CUDA functions calculate the forward and backward of a linear operator. This includes:
 
-+ A bunch of C++/CUDA functions calculate the forward and backward of a linear operator.
+    + Matrix multiplication (2 versions)
+
+    + Matrix transpose (2 versions)
 
 + Testings to make sure the forward and backward are correct.
 

@@ -15,7 +15,7 @@ torch::Tensor linear_forward(
     TORCH_CHECK(input.size(1) == weight.size(0), "linear_forward: shape mismatch");
 
     // Y = X * W + b
-    auto output = matmul_fw_cuda(input, weight);
+    auto output = matmul_cuda(input, weight);
 
     output = output + bias.expand_as(output); // TODO: convert to our own add kernel
 
@@ -36,7 +36,7 @@ torch::Tensor linear_dinput_backward(
     // CHECK_INPUT(bias);
 
     // dL/dX = dL/dY * W^T
-    auto grad_input = matmul_fw_cuda(grad_output, transpose_cuda(weight));
+    auto grad_input = matmul_cuda(grad_output, transpose_cuda(weight));
 
     return grad_input;
 }
@@ -54,7 +54,7 @@ torch::Tensor linear_dweight_backward(
     // CHECK_INPUT(bias);
 
     // dL/dW = X^T * dL/dY
-    auto grad_weight = matmul_fw_cuda(transpose_cuda(input), grad_output);
+    auto grad_weight = matmul_cuda(transpose_cuda(input), grad_output);
 
     return grad_weight;
 }
@@ -88,7 +88,7 @@ torch::Tensor matmul_forward(
 
     TORCH_CHECK(A.size(1) == B.size(0), "matmul_fast_forward: shape mismatch");
 
-    return matmul_fw_cuda(A, B);
+    return matmul_cuda(A, B);
 }
 
 
@@ -99,12 +99,12 @@ torch::Tensor matmul_dA_backward(
     const torch::Tensor &B) 
 {
     CHECK_INPUT(grad_output);
-    CHECK_INPUT(A);
+    // CHECK_INPUT(A);
     CHECK_INPUT(B);
     
     // dL/dB = dL/dY * B^T
-    auto grad_A = matmul_fw_cuda(grad_output, transpose_cuda(B));
-    // auto grad_A = matmul_fw_cuda(grad_output, B.transpose(0, 1));
+    auto grad_A = matmul_cuda(grad_output, transpose_cuda(B));
+    // auto grad_A = matmul_cuda(grad_output, B.transpose(0, 1));
 
     return grad_A;
 }
@@ -117,11 +117,11 @@ torch::Tensor matmul_dB_backward(
 {
     CHECK_INPUT(grad_output);
     CHECK_INPUT(A);
-    CHECK_INPUT(B);
+    // CHECK_INPUT(B);
     
     // dL/dB = A^T * dL/dY
-    auto grad_B = matmul_fw_cuda(transpose_cuda(A), grad_output);
-    // auto grad_B = matmul_fw_cuda(A.transpose(0, 1), grad_output);
+    auto grad_B = matmul_cuda(transpose_cuda(A), grad_output);
+    // auto grad_B = matmul_cuda(A.transpose(0, 1), grad_output);
 
     return grad_B;
 }
