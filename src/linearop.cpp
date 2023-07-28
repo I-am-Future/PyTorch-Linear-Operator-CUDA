@@ -8,9 +8,18 @@ torch::Tensor linear_forward(
     const torch::Tensor &weight, 
     const torch::Tensor &bias) 
 {
-    // TODO
+    CHECK_INPUT(input);
+    CHECK_INPUT(weight);
+    CHECK_INPUT(bias);
 
-    return input;
+    TORCH_CHECK(input.size(1) == weight.size(0), "linear_forward: shape mismatch");
+
+    // Y = X * W + b
+    auto output = matmul_fw_cuda(input, weight);
+
+    output = output + bias.expand_as(output); // TODO: convert to our own add kernel
+
+    return output;
 }
 
 
@@ -21,9 +30,15 @@ torch::Tensor linear_dinput_backward(
     const torch::Tensor &weight, 
     const torch::Tensor &bias) 
 {
-    // TODO
+    CHECK_INPUT(grad_output);
+    // CHECK_INPUT(input);
+    CHECK_INPUT(weight);
+    // CHECK_INPUT(bias);
 
-    return grad_output;
+    // dL/dX = dL/dY * W^T
+    auto grad_input = matmul_fw_cuda(grad_output, transpose_cuda(weight));
+
+    return grad_input;
 }
 
 /* Backward for weight gradient */
@@ -33,9 +48,15 @@ torch::Tensor linear_dweight_backward(
     const torch::Tensor &weight, 
     const torch::Tensor &bias) 
 {
-    // TODO
+    CHECK_INPUT(grad_output);
+    CHECK_INPUT(input);
+    // CHECK_INPUT(weight);
+    // CHECK_INPUT(bias);
 
-    return grad_output;
+    // dL/dW = X^T * dL/dY
+    auto grad_weight = matmul_fw_cuda(transpose_cuda(input), grad_output);
+
+    return grad_weight;
 }
 
 /* Backward for bias gradient */
@@ -45,9 +66,15 @@ torch::Tensor linear_dbias_backward(
     const torch::Tensor &weight, 
     const torch::Tensor &bias) 
 {
-    // TODO
+    CHECK_INPUT(grad_output);
+    // CHECK_INPUT(input);
+    // CHECK_INPUT(weight);
+    // CHECK_INPUT(bias);
 
-    return grad_output;
+    // dL/db = sum(dL/dY, axis=0)
+    auto grad_bias = grad_output.sum(0);
+
+    return grad_bias;
 }
 
 
