@@ -141,3 +141,56 @@ torch::Tensor transpose_cuda(const torch::Tensor A) {
 
     return result;
 }
+
+
+template <typename scalar_t>
+__global__ void add_inplace_nxp_1xp_kernel(
+    torch::PackedTensorAccessor<scalar_t, 2, torch::RestrictPtrTraits, size_t> A,
+    const torch::PackedTensorAccessor<scalar_t, 1, torch::RestrictPtrTraits, size_t> B,
+    const int n, const int p
+)
+{
+    const int row = blockIdx.x * blockDim.x + threadIdx.x;
+    const int col = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (row >= n || col >= p) return;
+
+    // move B into the shared memory
+    __shared__ scalar_t Bs[BLOCK_SIZE];
+    if (threadIdx.y == 0) {
+        Bs[threadIdx.x] = B[col];
+    }
+    __syncthreads();
+
+    A[row][col] += Bs[threadIdx.x];
+
+}
+
+
+/*
+ * A: n x p, B: 1 x p
+ * Use broadcasting. Result store in A.
+ */
+torch::Tensor add_inplace_nxp_p_cuda(
+    const torch::Tensor A, 
+    const torch::Tensor B
+) {
+
+    const int n = A.size(0);
+    const int p = A.size(1);
+    
+    const dim3 blockSize = dim3(BLOCK_SIZE, BLOCK_SIZE);
+    const dim3 gridSize = dim3(DIV_CEIL(n, BLOCK_SIZE), DIV_CEIL(p, BLOCK_SIZE));
+  
+    // Call the cuda kernel launcher
+    AT_DISPATCH_FLOATING_TYPES(A.type(), "add_inplace_nxp_1xp_cuda", 
+    ([&] {
+        add_inplace_nxp_1xp_kernel<scalar_t><<<gridSize, blockSize>>>(
+            A.packed_accessor<scalar_t, 2, torch::RestrictPtrTraits, size_t>(),
+            B.packed_accessor<scalar_t, 1, torch::RestrictPtrTraits, size_t>(),
+            n, p
+        );
+    }));
+
+    return A;
+}

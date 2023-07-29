@@ -17,7 +17,8 @@ torch::Tensor linear_forward(
     // Y = X * W + b
     auto output = matmul_cuda(input, weight);
 
-    output = output + bias.expand_as(output); // TODO: convert to our own add kernel
+    // output = output + bias.expand_as(output); // TODO: convert to our own add kernel
+    output = add_inplace_nxp_p_cuda(output, bias);
 
     return output;
 }
@@ -31,9 +32,7 @@ torch::Tensor linear_dinput_backward(
     const torch::Tensor &bias) 
 {
     CHECK_INPUT(grad_output);
-    // CHECK_INPUT(input);
     CHECK_INPUT(weight);
-    // CHECK_INPUT(bias);
 
     // dL/dX = dL/dY * W^T
     auto grad_input = matmul_cuda(grad_output, transpose_cuda(weight));
@@ -50,8 +49,6 @@ torch::Tensor linear_dweight_backward(
 {
     CHECK_INPUT(grad_output);
     CHECK_INPUT(input);
-    // CHECK_INPUT(weight);
-    // CHECK_INPUT(bias);
 
     // dL/dW = X^T * dL/dY
     auto grad_weight = matmul_cuda(transpose_cuda(input), grad_output);
@@ -67,9 +64,6 @@ torch::Tensor linear_dbias_backward(
     const torch::Tensor &bias) 
 {
     CHECK_INPUT(grad_output);
-    // CHECK_INPUT(input);
-    // CHECK_INPUT(weight);
-    // CHECK_INPUT(bias);
 
     // dL/db = sum(dL/dY, axis=0)
     auto grad_bias = grad_output.sum(0);
@@ -104,7 +98,6 @@ torch::Tensor matmul_dA_backward(
     
     // dL/dB = dL/dY * B^T
     auto grad_A = matmul_cuda(grad_output, transpose_cuda(B));
-    // auto grad_A = matmul_cuda(grad_output, B.transpose(0, 1));
 
     return grad_A;
 }
@@ -121,7 +114,6 @@ torch::Tensor matmul_dB_backward(
     
     // dL/dB = A^T * dL/dY
     auto grad_B = matmul_cuda(transpose_cuda(A), grad_output);
-    // auto grad_B = matmul_cuda(A.transpose(0, 1), grad_output);
 
     return grad_B;
 }
