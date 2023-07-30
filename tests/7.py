@@ -4,7 +4,7 @@ import torch
 import mylinearops_cuda
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '6'
+os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 print('Init complete!')
 
 class Linear(torch.autograd.Function):
@@ -28,9 +28,9 @@ class Linear(torch.autograd.Function):
 
         return grad_X, grad_W, grad_b
     
-X = torch.randn(10, 20).to('cuda:0').requires_grad_()
-W = torch.randn(20, 30).to('cuda:0').requires_grad_()
-b = torch.randn(30).to('cuda:0').requires_grad_()
+X = torch.randn(100, 200).to('cuda:0').requires_grad_()
+W = torch.randn(200, 300).to('cuda:0').requires_grad_()
+b = torch.randn(300).to('cuda:0').requires_grad_()
 X1 = X.clone().detach().requires_grad_()
 W1 = W.clone().detach().requires_grad_()
 b1 = b.clone().detach().requires_grad_()

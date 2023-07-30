@@ -66,7 +66,8 @@ torch::Tensor linear_dbias_backward(
     CHECK_INPUT(grad_output);
 
     // dL/db = sum(dL/dY, axis=0)
-    auto grad_bias = grad_output.sum(0);
+    // auto grad_bias = grad_output.sum(0);
+    auto grad_bias = sum_axis_cuda(grad_output, 0);
 
     return grad_bias;
 }
@@ -119,6 +120,19 @@ torch::Tensor matmul_dB_backward(
 }
 
 
+// wrapper for sum axis cuda
+// This function is an experimental version, and it has not been optimized yet.
+// This function is currently slower than the official implementation.
+torch::Tensor sum_axis(
+    const torch::Tensor &input, 
+    const int axis) 
+{
+    CHECK_INPUT(input);
+
+    return sum_axis_cuda(input, axis);
+}
+
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def("linear_forward", &linear_forward, "Linear forward");
     m.def("linear_dinput_backward", &linear_dinput_backward, "Linear dinput backward");
@@ -127,4 +141,5 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def("matmul_forward", &matmul_forward, "Matmul forward");
     m.def("matmul_dA_backward", &matmul_dA_backward, "Matmul dA backward");
     m.def("matmul_dB_backward", &matmul_dB_backward, "Matmul dB backward");
+    m.def("sum_axis", &sum_axis, "Sum axis");
 }

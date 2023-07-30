@@ -5,7 +5,7 @@ import mylinearops_cuda
 import os
 import time
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
 m = 4098
 n = 4098
@@ -19,9 +19,11 @@ for _ in range(10):
     my_res = mylinearops_cuda.matmul_forward(A, B)
     torch.cuda.synchronize()
     t1 = time.time()
-
-    print(t1 - t0, end=' ')
-
     torch_res = torch.mm(A, B)
+    torch.cuda.synchronize()
+    t2 = time.time()
+
+    print(t1 - t0, t2 - t1, end=' ')
+
     print(torch.max(torch.abs(my_res - torch_res)))
 

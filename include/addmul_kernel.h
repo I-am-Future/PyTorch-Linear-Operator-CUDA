@@ -12,3 +12,7 @@ torch::Tensor add_inplace_nxp_p_cuda(
     const torch::Tensor A, 
     const torch::Tensor B
 );
+
+
+torch::Tensor sum_axis_cuda(const torch::Tensor A, int axis);
+

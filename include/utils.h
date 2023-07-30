@@ -21,3 +21,5 @@
 
 #define DIV_CEIL(a, b) (((a) + (b) - 1) / (b))
 
+// a = ceil(sqrt(a))
+#define SQRT_CEIL(a) (ceil(sqrt((a))))

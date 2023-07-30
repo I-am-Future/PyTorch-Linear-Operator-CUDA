@@ -1,6 +1,7 @@
 #include "addmul_kernel.h"
 
 #define BLOCK_SIZE 16
+#define NUM_THREADS 1024
 #define EXPERIMENTAL
 
 
@@ -168,7 +169,7 @@ __global__ void add_inplace_nxp_1xp_kernel(
 
 
 /*
- * A: n x p, B: 1 x p
+ * A: n x p matrix, B: p-dim vector (1 x p)
  * Use broadcasting. Result store in A.
  */
 torch::Tensor add_inplace_nxp_p_cuda(
@@ -193,4 +194,105 @@ torch::Tensor add_inplace_nxp_p_cuda(
     }));
 
     return A;
+}
+
+
+template <typename scalar_t>
+__global__ void sum_axis_kernel(
+    torch::PackedTensorAccessor<scalar_t, 2, torch::RestrictPtrTraits, size_t> A,
+    torch::PackedTensorAccessor<scalar_t, 1, torch::RestrictPtrTraits, size_t> res,
+    const int axis, const int n, const int m
+)
+{
+    const int row = blockIdx.x * blockDim.x + threadIdx.x;
+    const int col = blockIdx.y * blockDim.y + threadIdx.y;
+
+    scalar_t sum = 0;
+    __shared__ scalar_t sums[NUM_THREADS];
+
+    // along row
+    if (axis == 0) {
+        for (int idx = threadIdx.x + blockIdx.x * blockDim.x; idx < n; idx += blockDim.x * gridDim.x) {
+            sum += A[idx][col];
+        }
+        sums[threadIdx.x] = sum;
+        __syncthreads();
+
+        // reduce
+        for (int stride = blockDim.x / 2; stride > 0; stride >>= 1) {
+            if (threadIdx.x < stride) {
+                sums[threadIdx.x] += sums[threadIdx.x + stride];
+            }
+            __syncthreads();
+        }
+
+        // write result
+        if (threadIdx.x == 0) {
+            res[col] = sums[0];
+        }
+        // if (blockIdx.x * blockDim.x < n) {
+        //     if (threadIdx.x == 0) {
+        //         atomicAdd(&res[col], sums[0]);
+        //     }
+        // }
+    } else {
+        // along col
+        for (int idx = threadIdx.y + blockIdx.y * blockDim.y; idx < m; idx += blockDim.y * gridDim.y) {
+            sum += A[row][idx];
+        }
+        sums[threadIdx.y] = sum;
+        __syncthreads();
+
+        // reduce
+        for (int stride = blockDim.y / 2; stride > 0; stride >>= 1) {
+            if (threadIdx.y < stride) {
+                sums[threadIdx.y] += sums[threadIdx.y + stride];
+            }
+            __syncthreads();
+        }
+        
+        // write result
+        // if (blockIdx.y * blockDim.y < m) {
+        //     if (threadIdx.y == 0) {
+        //         atomicAdd(&res[row], sums[0]);
+        //     }
+        // }
+        if (threadIdx.y == 0) {
+            res[row] = sums[0];
+        }
+    }
+}
+
+
+torch::Tensor sum_axis_cuda(const torch::Tensor A, int axis)
+{
+    const int n = A.size(0);
+    const int m = A.size(1);
+    
+    // Create output tensor
+    auto result = torch::zeros({axis == 0 ? m : n}, A.options());
+
+    // create block, grid config
+    dim3 blockSize, gridSize;
+    if (axis == 0) {
+        blockSize = dim3(NUM_THREADS, 1);
+        // gridSize = dim3(SQRT_CEIL(n/NUM_THREADS), m);
+        gridSize = dim3(1, m);
+    }
+    else {
+        blockSize = dim3(1, NUM_THREADS);
+        gridSize = dim3(n, 1);
+    }
+  
+    // Call the cuda kernel launcher
+    AT_DISPATCH_FLOATING_TYPES(A.type(), "sum_axis_cuda", 
+    ([&] {
+        sum_axis_kernel<scalar_t><<<gridSize, blockSize>>>(
+            A.packed_accessor<scalar_t, 2, torch::RestrictPtrTraits, size_t>(),
+            result.packed_accessor<scalar_t, 1, torch::RestrictPtrTraits, size_t>(),
+            axis, n, m
+        );
+    }));
+
+    return result;
 }
