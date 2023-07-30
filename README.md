@@ -22,6 +22,12 @@ It includes:
 
     + Matrix transpose (2 versions)
 
+    + Matrix vector addition
+
+    + Matrix sum along axis
+
+    + (Unfortunately, our implementation are not as fast as PyTorch's, which utilizes cuBLAS and cuDNN. But it is a good demo in writing PyTorch C++ CUDA extension.)
+
 + Testings to make sure the forward and backward are correct.
 
 ## Build
