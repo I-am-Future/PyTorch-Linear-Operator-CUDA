@@ -46,3 +46,4 @@ print(torch.max(torch.abs(X.grad - X1.grad)))
 print(torch.max(torch.abs(W.grad - W1.grad)))
 print(torch.max(torch.abs(b.grad - b1.grad)))
 
+print(b.grad)
