@@ -14,8 +14,6 @@ It includes:
 
     + How to write Python module wrapper
 
-+ A simple Python matrix multiplication operator and a simple linear (Y = XW+b) operator.
-
 + A bunch of C++/CUDA functions calculate the forward and backward of a linear operator. This includes:
 
     + Matrix multiplication (2 versions)
@@ -28,7 +26,11 @@ It includes:
 
     + (Unfortunately, our implementation are not as fast as PyTorch's, which utilizes cuBLAS and cuDNN. But it is a good demo in writing PyTorch C++ CUDA extension.)
 
-+ Testings to make sure the forward and backward are correct.
++ A Python-side module interface for matrix multiplication operator and a simple linear (Y = XW+b) operator.
+
++ Testings (manually and `torch.autograd.gradcheck`) to make sure the forward and backward are correct.
+
++ An short example of using our own linear layer vs. torch's linear layer in classifying MNIST dataset. Supprisingly, our implementation is even a little faster than torch's.
 
 ## Build
 
@@ -56,4 +58,18 @@ python setup.py install
 ```python
 import torch
 import mylinearops
+
+dir(mylinearops)
+[..., 'linearop', 'matmul', 'mylinearops']
 ```
+
+Or, you can run the example we provide:
+
+```bash
+# use our implementation
+python examples/main.py > examples/log
+
+# use torch's implementation
+python examples/main.py --torch > examples/log_torch
+```
+
