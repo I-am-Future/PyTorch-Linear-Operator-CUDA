@@ -9,6 +9,8 @@ import mylinearops
 import torchvision
 
 import os
+import sys
+import time
 os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 
 class MLP(nn.Module):
@@ -18,13 +20,32 @@ class MLP(nn.Module):
         self.linear2 = mylinearops.LinearLayer(256, 256, bias=True).cuda()
         self.linear3 = mylinearops.LinearLayer(256, 10, bias=True).cuda()
         self.relu = nn.ReLU()
-        self.softmax = nn.Softmax(dim=1)
+        # self.softmax = nn.Softmax(dim=1)
     
     def forward(self, x):
         x = x.view(-1, 784)
         x = self.relu(self.linear1(x))
         x = self.relu(self.linear2(x))
-        x = self.softmax(self.linear3(x))
+        # x = self.softmax(self.linear3(x))
+        x = self.linear3(x)
+        return x
+    
+# MLP with torch.nn
+class MLP_torch(nn.Module):
+    def __init__(self):
+        super(MLP_torch, self).__init__()
+        self.linear1 = nn.Linear(784, 256, bias=True).cuda()
+        self.linear2 = nn.Linear(256, 256, bias=True).cuda()
+        self.linear3 = nn.Linear(256, 10, bias=True).cuda()
+        self.relu = nn.ReLU()
+        # self.softmax = nn.Softmax(dim=1)
+    
+    def forward(self, x):
+        x = x.view(-1, 784)
+        x = self.relu(self.linear1(x))
+        x = self.relu(self.linear2(x))
+        # x = self.softmax(self.linear3(x))
+        x = self.linear3(x)
         return x
 
 # Load the MNIST dataset.
@@ -32,7 +53,12 @@ mnist_dataset = torchvision.datasets.MNIST(root='./data', train=True, transform=
 mnist_dataloader = torch.utils.data.DataLoader(mnist_dataset, batch_size=128, shuffle=True, num_workers=4)
 
 # Create the MLP model.
-mlp = MLP().cuda()
+if len(sys.argv) > 1 and sys.argv[1] == '--torch':
+    mlp = MLP_torch().cuda()
+    print('Using torch.nn\'s Linear layer.')
+else:
+    mlp = MLP().cuda()
+    print('Using mylinearops\'s Linear layer.')
 
 # Create the optimizer.
 optimizer = torch.optim.SGD(mlp.parameters(), lr=0.01, momentum=0.9)
@@ -41,6 +67,8 @@ optimizer = torch.optim.SGD(mlp.parameters(), lr=0.01, momentum=0.9)
 critertion = nn.CrossEntropyLoss()
 
 # Train the MLP for 10 epochs. Record the accuracy and loss.
+start_time = time.time()
+
 for epoch in range(10):
     for i, (images, labels) in enumerate(mnist_dataloader):
         images = images.cuda()
@@ -59,5 +87,5 @@ for epoch in range(10):
             print('Epoch: [%d/%d], Step: [%d/%d], Loss: %.4f, Acc: %.4f'
                   % (epoch+1, 10, i+1, len(mnist_dataset)//128, loss.item(), acc))
 
-
+print('Time: %.4fs' % (time.time() - start_time))
 
