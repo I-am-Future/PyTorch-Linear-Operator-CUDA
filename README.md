@@ -52,6 +52,8 @@ Then, install the project.
 python setup.py install
 ```
 
+**Special Note:** If you want to run the python codes (in `examples` and `test`), you may need to adjust the `os.environ['CUDA_VISIBLE_DEVICES']` to an appropriate value, e.g., `'0'`. Sorry for the inconvenience. 
+
 
 ## Python interface usage
 
@@ -63,7 +65,8 @@ dir(mylinearops)
 [..., 'linearop', 'matmul', 'mylinearops']
 ```
 
-Or, you can run the example we provide:
+
+Or, you can try the example of classifying Mnist digits:
 
 ```bash
 # use our implementation
