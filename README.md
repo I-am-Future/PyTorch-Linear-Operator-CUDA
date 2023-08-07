@@ -24,9 +24,9 @@ It includes:
 
     + Matrix sum along axis
 
-    + (Unfortunately, our implementation are not as fast as PyTorch's, which utilizes cuBLAS and cuDNN. But it is a good demo in writing PyTorch C++ CUDA extension.)
+    + (Unfortunately, our implementation are not as fast as PyTorch's, which utilizes cuBLAS and cuDNN. But it is still a good demo in how to write PyTorch C++ CUDA extension.)
 
-+ A Python-side module interface for matrix multiplication operator and a simple linear (Y = XW+b) operator.
++ A Python-side module interface (`torch.autograd.Function`) for matrix multiplication operator and a simple linear (Y = XW+b) operator.
 
 + Testings (manually and `torch.autograd.gradcheck`) to make sure the forward and backward are correct.
 
