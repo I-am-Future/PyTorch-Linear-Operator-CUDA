@@ -2,6 +2,8 @@
 
 This is a simple demo of how to write a Linear operator (Y = XW+b) in PyTorch C++ CUDA extension. 
 
+The corresponding blog (text explanation for the code) is at [here](https://i-am-future.github.io/2023/07/30/Pytorch-Practical-Basics-6/). (From section 6 to section 9 are all talking about that.)
+
 It includes:
 
 + An entire template of how to write a CUDA extension in PyTorch. This includes:
