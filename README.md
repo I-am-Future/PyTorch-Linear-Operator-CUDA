@@ -2,6 +2,8 @@
 
 This is a simple demo of how to write a Linear operator (Y = XW+b) in PyTorch C++ CUDA extension. 
 
+The corresponding blog (text explanation for the code) is at [here](https://i-am-future.github.io/2023/07/30/Pytorch-Practical-Basics-6/). (From section 6 to section 9 are all talking about that.)
+
 It includes:
 
 + An entire template of how to write a CUDA extension in PyTorch. This includes:
@@ -24,9 +26,9 @@ It includes:
 
     + Matrix sum along axis
 
-    + (Unfortunately, our implementation are not as fast as PyTorch's, which utilizes cuBLAS and cuDNN. But it is a good demo in writing PyTorch C++ CUDA extension.)
+    + (Unfortunately, our implementation are not as fast as PyTorch's, which utilizes cuBLAS and cuDNN. But it is still a good demo in how to write PyTorch C++ CUDA extension.)
 
-+ A Python-side module interface for matrix multiplication operator and a simple linear (Y = XW+b) operator.
++ A Python-side module interface (`torch.autograd.Function`) for matrix multiplication operator and a simple linear (Y = XW+b) operator.
 
 + Testings (manually and `torch.autograd.gradcheck`) to make sure the forward and backward are correct.
 
