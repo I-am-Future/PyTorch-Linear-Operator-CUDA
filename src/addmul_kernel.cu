@@ -158,12 +158,20 @@ __global__ void add_inplace_nxp_1xp_kernel(
 
     // move B into the shared memory
     __shared__ scalar_t Bs[BLOCK_SIZE];
-    if (threadIdx.y == 0) {
-        Bs[threadIdx.x] = B[col];
+
+    /* Bug: the following commented code has wrong dimension calculation */
+    // if (threadIdx.y == 0) {
+        // Bs[threadIdx.x] = B[col];
+    // }
+    // __syncthreads();
+    // A[row][col] += Bs[threadIdx.x];
+
+    if (threadIdx.x == 0) {
+        Bs[threadIdx.y] = B[col];
     }
     __syncthreads();
 
-    A[row][col] += Bs[threadIdx.x];
+    A[row][col] += Bs[threadIdx.y];
 
 }
 

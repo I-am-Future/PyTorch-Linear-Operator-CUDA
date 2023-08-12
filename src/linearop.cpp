@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "linear_kernel.h"
 #include "addmul_kernel.h"
 
 
