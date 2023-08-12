@@ -30,7 +30,7 @@ It includes:
 
 + A Python-side module interface (`torch.autograd.Function`) for matrix multiplication operator and a simple linear (Y = XW+b) operator.
 
-+ Testings (manually and `torch.autograd.gradcheck`) to make sure the forward and backward are correct.
++ Testings (manually `torch.allclose` and `torch.autograd.gradcheck`) to make sure the forward and backward are correct.
 
 + An short example of using our own linear layer vs. torch's linear layer in classifying MNIST dataset. Supprisingly, our implementation is even a little faster than torch's.
 
