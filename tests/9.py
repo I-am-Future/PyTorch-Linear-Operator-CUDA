@@ -1,14 +1,18 @@
+'''
+Final tests for matmul backward calculation
+'''
+
 import torch
 import mylinearops
 
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
-A = torch.randn(2, 3, dtype=torch.float64).cuda().requires_grad_()
-B = torch.randn(3, 4, dtype=torch.float64).cuda().requires_grad_()
+A = torch.randn(20, 30, dtype=torch.float64).cuda().requires_grad_()
+B = torch.randn(30, 40, dtype=torch.float64).cuda().requires_grad_()
 
 
-print(mylinearops.matmul(A, B))
+# print(mylinearops.matmul(A, B))
 
 # do the grad check with torch.autograd
 

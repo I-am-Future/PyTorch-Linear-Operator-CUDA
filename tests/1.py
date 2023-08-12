@@ -2,4 +2,5 @@
 
 import mylinearops
 
-mylinearops.matmul_forward()
+# Deprecated
+# mylinearops.matmul_forward()
