@@ -16,9 +16,9 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '5'
 class MLP(nn.Module):
     def __init__(self):
         super(MLP, self).__init__()
-        self.linear1 = mylinearops.LinearLayer(784, 256, bias=True).cuda()
-        self.linear2 = mylinearops.LinearLayer(256, 256, bias=True).cuda()
-        self.linear3 = mylinearops.LinearLayer(256, 10, bias=True).cuda()
+        self.linear1 = mylinearops.LinearLayer(784, 256, bias=True)#.cuda()
+        self.linear2 = mylinearops.LinearLayer(256, 256, bias=True)#.cuda()
+        self.linear3 = mylinearops.LinearLayer(256, 10, bias=True)#.cuda()
         self.relu = nn.ReLU()
         # self.softmax = nn.Softmax(dim=1)
     
@@ -34,9 +34,9 @@ class MLP(nn.Module):
 class MLP_torch(nn.Module):
     def __init__(self):
         super(MLP_torch, self).__init__()
-        self.linear1 = nn.Linear(784, 256, bias=True).cuda()
-        self.linear2 = nn.Linear(256, 256, bias=True).cuda()
-        self.linear3 = nn.Linear(256, 10, bias=True).cuda()
+        self.linear1 = nn.Linear(784, 256, bias=True)#.cuda()
+        self.linear2 = nn.Linear(256, 256, bias=True)#.cuda()
+        self.linear3 = nn.Linear(256, 10, bias=True)#.cuda()
         self.relu = nn.ReLU()
         # self.softmax = nn.Softmax(dim=1)
     
