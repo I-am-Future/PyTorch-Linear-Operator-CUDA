@@ -43,14 +43,15 @@ We recommend you to build a new virtual environment for this project.
 ```bash
 conda create -n env_name
 # install pytorch
-conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
 const activate env_name
+conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
 ```
 
 Then, install the project.
 
 
 ```bash
+# change to project dir first.
 python setup.py install
 ```
 
